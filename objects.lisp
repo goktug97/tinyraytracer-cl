@@ -3,9 +3,11 @@
 (defclass material ()
   ((refractive-index
     :initarg refractive-index
+    :initform 1
     :reader refractive-index)
    (albedo
     :initarg albedo
+    :initform (vec4f #(1f0 0f0 0f0 0f0))
     :reader albedo)
    (diffuse-color
     :initarg diffuse-color
