@@ -1,0 +1,59 @@
+(in-package :linalg-cl)
+
+(declaim
+ (inline dot-product)
+ (ftype (function (simple-array simple-array) single-float) dot-product))
+(defun dot-product (l1 l2 &aux (sum 0f0))
+  (declare (optimize (speed 3) (safety 0))
+	   (type simple-array l1 l2)
+	   (type single-float sum))
+  (map 'vector #'(lambda (x1 x2)
+		   (declare (type single-float x1 x2))
+		   (incf sum (the single-float (* x1 x2)))) l1 l2)
+  (the single-float sum))
+
+(defmacro define-elementwise-vector-op (name op)
+  `(defun ,name (&rest operands)
+     (reduce #'(lambda (vec1 vec2)
+		 (map 'vector #'(lambda (x1 x2) (funcall ,op x1 x2)) vec1 vec2))
+	     operands)))
+
+(define-elementwise-vector-op m+ #'+)
+(define-elementwise-vector-op m- #'-)
+(define-elementwise-vector-op m* #'*)
+(define-elementwise-vector-op m/ #'/)
+
+(defun ./ (vec scalar)
+  (let* ((m (car (array-dimensions vec)))
+	 (scalar-vec (make-array m :element-type 'simple-array
+				 :initial-element (coerce scalar 'single-float))))
+    (m/ vec scalar-vec)))
+
+(defun .* (vec scalar)
+  (let* ((m (car (array-dimensions vec)))
+	 (scalar-vec (make-array m :element-type 'simple-array
+				 :initial-element (coerce scalar 'single-float))))
+    (m* vec scalar-vec)))
+
+(defun negative (vec)
+  (map 'vector #'(lambda (x1) (- x1)) vec))
+
+(defun norm (vec)
+  (loop for elt across vec
+     for y = 0 then (+ y (expt elt 2))
+     finally (return (sqrt y))))
+
+(defun normalize (vec)
+  (./ vec (norm vec)))
+
+(defmacro define-vector-of-size (size)
+  (let ((name
+	 (cond ((= size 2) (make-symbol "vec2f"))
+	       ((= size 3) (make-symbol "vec3f"))
+	       ((= size 4) (make-symbol "vec4f")))))
+    `(defun ,name (data)
+       (make-array ,size :element-type 'simple-float :initial-contents data))))
+
+(define-vector-of-size 2)
+(define-vector-of-size 3)
+(define-vector-of-size 4)
