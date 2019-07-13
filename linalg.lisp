@@ -1,12 +1,6 @@
 (in-package :linalg-cl)
 
-(declaim
- (inline dot-product)
- (ftype (function (simple-array simple-array) single-float) dot-product))
 (defun dot-product (l1 l2 &aux (sum 0f0))
-  (declare (optimize (speed 3) (safety 0))
-	   (type simple-array l1 l2)
-	   (type single-float sum))
   (map 'vector #'(lambda (x1 x2)
 		   (declare (type single-float x1 x2))
 		   (incf sum (the single-float (* x1 x2)))) l1 l2)

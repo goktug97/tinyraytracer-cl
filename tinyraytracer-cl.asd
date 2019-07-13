@@ -8,5 +8,5 @@
   :serial t
   :components ((:file "package")
 	       (:file "linalg")
-	       ;(:file "objects")
+	       (:file "objects")
                (:file "tinyraytracer-cl")))
