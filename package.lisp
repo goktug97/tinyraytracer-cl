@@ -8,10 +8,19 @@
 	   :negative
 	   :norm
 	   :normalize
+	   :vec-x
+	   :vec-y
+	   :vec-z
 	   :Vec2f
 	   :Vec3f
 	   :Vec4f))
 
 (defpackage #:tinyraytracer-cl
   (:use #:cl
-	#:linalg-cl))
+	#:linalg-cl)
+  (:export :scene
+	   :scene-objects
+	   :ray-intersect
+	   :ray
+	   :ray-direction
+	   :ray-origin))

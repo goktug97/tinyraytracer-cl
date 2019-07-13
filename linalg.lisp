@@ -51,3 +51,12 @@
 (define-vector-of-size 2)
 (define-vector-of-size 3)
 (define-vector-of-size 4)
+
+(defun vec-x (vec)
+  (aref vec 0))
+
+(defun vec-y (vec)
+  (aref vec 1))
+
+(defun vec-z (vec)
+  (aref vec 2))

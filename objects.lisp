@@ -1,30 +1,47 @@
 (in-package :tinyraytracer-cl)
 
+(defclass material ()
+  ((refractive-index
+    :initarg refractive-index
+    :reader refractive-index)
+   (albedo
+    :initarg albedo
+    :reader albedo)
+   (diffuse-color
+    :initarg diffuse-color
+    :reader diffuse-color)
+   (specular-exponent
+    :initarg specular-exponent
+    :reader specular-exponent)))
+
 (defclass object ()
   ((center
     :initarg :center
     :type simple-array
-    :reader :object-center)))
+    :reader object-center)
+   (material
+    :initarg :material
+    :reader object-material)))
 
 (defclass sphere (object)
   ((radius
     :initarg :radius
     :type single-float
-    :reader :sphere-radius)))
+    :reader sphere-radius)))
 
 (defclass ray ()
   ((origin
     :initarg :origin
     :type simple-array
-    :reader :ray-origin)
+    :reader ray-origin)
    (direction
     :initarg :direction
     :type simple-array
-    :reader :ray-direction)))
+    :reader ray-direction)))
 
-(defgeneric ray-intersect (ray sphere))
+(defgeneric ray-intersect (ray object))
 
-(defmethod ray-intersect ((ray ray) (sphere sphere))
+(defmethod ray-intersect ((ray ray) (sphere object))
   (let* ((sphere-center (slot-value sphere 'center))
 	 (sphere-radius (slot-value sphere 'radius))
 	 (ray-origin (slot-value ray 'origin))
@@ -33,15 +50,13 @@
 	 (tca (dot-product vpc ray-direction))
 	 (d2 (- (dot-product vpc vpc) (expt tca 2)))
 	 (radius2 (expt sphere-radius 2)))
-    (if (> d2 radius2)
-	nil
-	(let* ((thc (sqrt (- radius2 d2)))
-	       (t0 (- tca thc)))
-	  (when (< t0 0)
-	    (setf t0 (+ tca thc)))
-	  (if (< t0 0)
-	      nil
-	      t0)))))
+    (unless (> d2 radius2)
+      (let* ((thc (sqrt (- radius2 d2)))
+	     (t0 (- tca thc)))
+	(when (< t0 0)
+	  (setf t0 (+ tca thc)))
+	(unless (< t0 0)
+	  t0)))))
 
 (defparameter *sphere* (make-instance 'sphere
 				      :center (vec3f #(0f0 0f0 30f0))
