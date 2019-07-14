@@ -8,7 +8,10 @@
    (lights
     :initarg :lights
     :initform '()
-    :reader scene-lights)))
+    :reader scene-lights)
+   (background
+    :initarg :background
+    :reader background)))
 
 (defun push-object (scene object)
   (with-slots (objects) scene
@@ -75,73 +78,77 @@
 	      (vec3f #(1f0 0f0 0f0))
 	      (m+ (.* ray-direction eta) (.* normal (- (* eta cosi) (sqrt k)))))))))
 
-(defun cast-ray (ray scene &optional (depth 0))
+(defun cast-ray (ray scene j i &optional (depth 0))
   (let ((intersects (scene-intersect ray scene)))
     (if (and (< depth 5) intersects)
-	(destructuring-bind (hit normal material) intersects
-	  (let* ((ray-direction (ray-direction ray))
-		 (refractive-index (refractive-index material))
-		 (diffuse-color (diffuse-color material))
-		 (specular-exponent (specular-exponent material))
-		 (albedo (albedo material))
-		 (reflect-direction (normalize (reflect ray-direction normal)))
-		 (refract-direction (normalize
-				     (refract
-				      ray-direction normal refractive-index)))
-		 (offset (.* normal 1e-3))
-		 (reflect-origin (if (< (dot-product reflect-direction normal) 0)
+      (destructuring-bind (hit normal material) intersects
+	(let* ((ray-direction (ray-direction ray))
+	       (refractive-index (refractive-index material))
+	       (diffuse-color (diffuse-color material))
+	       (specular-exponent (specular-exponent material))
+	       (albedo (albedo material))
+	       (reflect-direction (normalize (reflect ray-direction normal)))
+	       (refract-direction (normalize
+				   (refract
+				    ray-direction normal refractive-index)))
+	       (offset (.* normal 1e-3))
+	       (reflect-origin (if (< (dot-product reflect-direction normal) 0)
+				   (m- hit offset)
+				   (m+ hit offset)))
+	       (refract-origin (if (< (dot-product refract-direction normal) 0)
+				   (m- hit offset)
+				   (m+ hit offset)))
+	       (reflect-ray (define-ray reflect-origin reflect-direction))
+	       (refract-ray (define-ray refract-origin refract-direction))
+	       (reflect-color (cast-ray reflect-ray scene j i (+ depth 1)))
+	       (refract-color (cast-ray refract-ray scene j i (+ depth 1)))
+	       (diffuse-light-intensity 0f0)
+	       (specular-light-intensity 0f0)
+	       (lights (scene-lights scene)))
+	  (loop for light in lights
+	     for light-intensity = (light-intensity light)
+	     and light-position = (light-position light)
+	     for light-direction = (normalize (m- light-position hit))
+	     and light-distance = (norm (m- light-position hit))
+	     for shadow-origin = (if (< (dot-product light-direction normal) 0)
 				     (m- hit offset)
-				     (m+ hit offset)))
-		 (refract-origin (if (< (dot-product refract-direction normal) 0)
-				     (m- hit offset)
-				     (m+ hit offset)))
-		 (reflect-ray (define-ray reflect-origin reflect-direction))
-		 (refract-ray (define-ray refract-origin refract-direction))
-		 (reflect-color (cast-ray reflect-ray scene (+ depth 1)))
-		 (refract-color (cast-ray refract-ray scene (+ depth 1)))
-		 (diffuse-light-intensity 0f0)
-		 (specular-light-intensity 0f0)
-		 (lights (scene-lights scene)))
-	    (loop for light in lights
-	       for light-intensity = (light-intensity light)
-	       and light-position = (light-position light)
-	       for light-direction = (normalize (m- light-position hit))
-	       and light-distance = (norm (m- light-position hit))
-	       for shadow-origin = (if (< (dot-product light-direction normal) 0)
-				       (m- hit offset)
-				       (m+ hit offset))
-	       for shadow-ray = (define-ray shadow-origin light-direction)
-	       for intersects = (scene-intersect shadow-ray scene)
-	       unless (and intersects
-			   (destructuring-bind (shadow-hit _a _b) intersects
-			     (declare (ignore _a _b))
-			     (< (norm (m- shadow-hit shadow-origin))
-				light-distance)))
-	       do (progn
-		    (incf diffuse-light-intensity
-			  (* light-intensity
-			     (max 0f0 (dot-product light-direction normal))))
-		    (unless (= specular-exponent 0f0)
-		      (incf specular-light-intensity
-			    (* (expt (max 0
-					  (dot-product
-					   (negative
-					    (reflect (negative light-direction) normal))
-					   ray-direction))
-				     specular-exponent)
-			       light-intensity))))
-	       finally (return
-			 (m+ (.* diffuse-color
-				 diffuse-light-intensity
-				 (aref albedo 0))
-			     (.* (vec3f #(255f0 255f0 255f0))
-				 specular-light-intensity
-				 (aref albedo 1))
-			     (m+ (.* reflect-color
-				     (aref albedo 2))
-				 (.* refract-color
-				     (aref albedo 3))))))))
-	(vec3f #(51f0 179f0 204f0)))))
+				     (m+ hit offset))
+	     for shadow-ray = (define-ray shadow-origin light-direction)
+	     for intersects = (scene-intersect shadow-ray scene)
+	     unless (and intersects
+			 (destructuring-bind (shadow-hit _a _b) intersects
+			   (declare (ignore _a _b))
+			   (< (norm (m- shadow-hit shadow-origin))
+			      light-distance)))
+	     do (progn
+		  (incf diffuse-light-intensity
+			(* light-intensity
+			   (max 0f0 (dot-product light-direction normal))))
+		  (unless (= specular-exponent 0f0)
+		    (incf specular-light-intensity
+			  (* (expt (max 0
+					(dot-product
+					 (negative
+					  (reflect (negative light-direction) normal))
+					 ray-direction))
+				   specular-exponent)
+			     light-intensity))))
+	     finally (return
+		       (m+ (.* diffuse-color
+			       diffuse-light-intensity
+			       (aref albedo 0))
+			   (.* (vec3f #(255f0 255f0 255f0))
+			       specular-light-intensity
+			       (aref albedo 1))
+			   (m+ (.* reflect-color
+				   (aref albedo 2))
+			       (.* refract-color
+				   (aref albedo 3))))))))
+      (let* ((background-data (background scene))
+	     (red (coerce (aref background-data i j 0) 'single-float))
+	     (green (coerce (aref background-data i j 1) 'single-float))
+	     (blue (coerce (aref background-data i j 2) 'single-float)))
+	(vec3f `#(,red ,green ,blue))))))
 
 (defun simple-scene ()
   (let* ((ivory (make-instance 'material
@@ -188,5 +195,7 @@
 				 :position (vec3f #(30f0 20f0 30f0))))
 	 (scene (make-instance 'scene
 			       :objects (list sphere-1 sphere-2 sphere-3 sphere-4)
-			       :lights (list light-1 light-2 light-3))))
+			       :lights (list light-1 light-2 light-3)
+			       :background (png-read:image-data
+					    (png-read:read-png-file "envmap.png")))))
     scene))
