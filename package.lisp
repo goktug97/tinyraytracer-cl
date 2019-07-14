@@ -11,9 +11,9 @@
 	   :vec-x
 	   :vec-y
 	   :vec-z
-	   :Vec2f
-	   :Vec3f
-	   :Vec4f))
+	   :vec2f
+	   :vec3f
+	   :vec4f))
 
 (defpackage #:tinyraytracer-cl
   (:use #:cl

@@ -46,9 +46,9 @@
 
 (defmacro define-vector-of-size (size)
   (let ((name
-	 (cond ((= size 2) (make-symbol "vec2f"))
-	       ((= size 3) (make-symbol "vec3f"))
-	       ((= size 4) (make-symbol "vec4f")))))
+	 (cond ((= size 2) (read-from-string "vec2f"))
+	       ((= size 3) (read-from-string "vec3f"))
+	       ((= size 4) (read-from-string "vec4f")))))
     `(defun ,name (data)
        (make-array ,size :element-type 'simple-float :initial-contents data))))
 
