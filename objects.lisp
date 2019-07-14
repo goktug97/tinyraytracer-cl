@@ -3,7 +3,7 @@
 (defclass material ()
   ((refractive-index
     :initarg :refractive-index
-    :initform 1
+    :initform 1f0
     :reader refractive-index)
    (albedo
     :initarg :albedo
@@ -14,6 +14,7 @@
     :reader diffuse-color)
    (specular-exponent
     :initarg :specular-exponent
+    :initform 0f0
     :reader specular-exponent)))
 
 (defclass object ()

@@ -112,21 +112,23 @@
 	       for shadow-ray = (define-ray shadow-origin light-direction)
 	       for intersects = (scene-intersect shadow-ray scene)
 	       unless (and intersects
-			   (destructuring-bind (shadow-hit &rest nil) intersects
+			   (destructuring-bind (shadow-hit _a _b) intersects
+			     (declare (ignore _a _b))
 			     (< (norm (m- shadow-hit shadow-origin))
 				light-distance)))
 	       do (progn
 		    (incf diffuse-light-intensity
 			  (* light-intensity
 			     (max 0f0 (dot-product light-direction normal))))
-		    (incf specular-light-intensity
-			  (* (expt (max 0f0
-					(dot-product
-					 (negative
-					  (reflect (negative light-direction) normal))
-					 ray-direction))
-				   specular-exponent)
-			     light-intensity)))
+		    (unless (= specular-exponent 0f0)
+		      (incf specular-light-intensity
+			    (* (expt (max 0
+					  (dot-product
+					   (negative
+					    (reflect (negative light-direction) normal))
+					   ray-direction))
+				     specular-exponent)
+			       light-intensity))))
 	       finally (return
 			 (m+ (.* diffuse-color
 				 diffuse-light-intensity
@@ -145,22 +147,22 @@
 			       :refractive-index 1f0
 			       :albedo (vec4f #(0.6 0.3 0.1 0f0))
 			       :diffuse-color (vec3f #(102f0 102f0 77f0))
-			       :refractive-index 50f0))
+			       :specular-exponent 50f0))
 	 (glass (make-instance 'material
 			       :refractive-index 1.5f0
 			       :albedo (vec4f #(0f0 0.5 0.1 0.8))
 			       :diffuse-color (vec3f #(153f0 179f0 204f0))
-			       :refractive-index 125f0))
+			       :specular-exponent 125f0))
 	 (red-rubber (make-instance 'material
 				    :refractive-index 1f0
 				    :albedo (vec4f #(0.9 0.1 0f0 0f0))
 				    :diffuse-color (vec3f #(77f0 22.5 22.5))
-				    :refractive-index 10f0))
+				    :specular-exponent 10f0))
 	 (mirror (make-instance 'material
 				:refractive-index 1f0
 				:albedo (vec4f #(0f0 10.0 0.8 0f0))
-				:diffuse-color (vec3f #(1f0 1f0 1f0))
-				:refractive-index 1425f0))
+				:diffuse-color (vec3f #(255f0 255f0 255f0))
+				:specular-exponent 1425f0))
 	 (sphere-1 (make-instance 'sphere
 				  :radius 2
 				  :center (vec3f #(-3f0 0f0 -16f0))

@@ -6,6 +6,7 @@
   :license  "MIT"
   :version "0.0.1"
   :serial t
+  :depends-on ("zpng")
   :components ((:file "package")
 	       (:file "linalg")
 	       (:file "objects")

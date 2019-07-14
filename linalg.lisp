@@ -38,7 +38,7 @@
 
 (defun norm (vec)
   (loop for elt across vec
-     for y = 0 then (+ y (expt elt 2))
+     for y = (expt elt 2) then (+ y (expt elt 2))
      finally (return (sqrt y))))
 
 (defun normalize (vec)
