@@ -3,8 +3,8 @@
 (in-package #:tinyraytracer-cl)
 
 (defun render (scene)
-  (let* ((width 64)
-	 (height 48)
+  (let* ((width 128)
+	 (height 96)
 	 (fov (/ (coerce pi 'single-float) 3f0))
 	 (screen-width (* 2 (tan (/ fov 2))))
 	 (dir-z (- (/ height screen-width)))
