@@ -23,11 +23,15 @@
 				 :initial-element (coerce scalar 'single-float))))
     (m/ vec scalar-vec)))
 
-(defun .* (vec scalar)
+(defun .* (vec &rest scalars)
   (let* ((m (car (array-dimensions vec)))
-	 (scalar-vec (make-array m :element-type 'simple-array
-				 :initial-element (coerce scalar 'single-float))))
-    (m* vec scalar-vec)))
+	 (result vec))
+    (loop for scalar in scalars
+       for scalar-vec = 
+	 (make-array m :element-type 'simple-array
+		     :initial-element (coerce scalar 'single-float))
+       do (setf result (m* result scalar-vec))
+	 finally (return result))))
 
 (defun negative (vec)
   (map 'vector #'(lambda (x1) (- x1)) vec))

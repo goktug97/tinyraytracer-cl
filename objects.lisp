@@ -2,18 +2,18 @@
 
 (defclass material ()
   ((refractive-index
-    :initarg refractive-index
+    :initarg :refractive-index
     :initform 1
     :reader refractive-index)
    (albedo
-    :initarg albedo
+    :initarg :albedo
     :initform (vec4f #(1f0 0f0 0f0 0f0))
     :reader albedo)
    (diffuse-color
-    :initarg diffuse-color
+    :initarg :diffuse-color
     :reader diffuse-color)
    (specular-exponent
-    :initarg specular-exponent
+    :initarg :specular-exponent
     :reader specular-exponent)))
 
 (defclass object ()
@@ -41,6 +41,16 @@
     :type simple-array
     :reader ray-direction)))
 
+(defclass light ()
+  ((position
+    :initarg :position
+    :type simple-array
+    :reader light-position)
+   (intensity
+    :initarg :intensity
+    :type single-float
+    :reader light-intensity)))
+
 (defgeneric ray-intersect (ray object))
 
 (defmethod ray-intersect ((ray ray) (sphere object))
@@ -60,11 +70,7 @@
 	(unless (< t0 0)
 	  t0)))))
 
-(defparameter *sphere* (make-instance 'sphere
-				      :center (vec3f #(0f0 0f0 30f0))
-				      :radius 10f0))
-(defparameter *ray* (make-instance 'ray
-				   :direction (vec3f #(0f0 0f0 1f0))
-				   :origin (vec3f #(0f0 0f0 0f0))))
+(defun define-ray (origin direction)
+  (make-instance 'ray :direction direction :origin origin))
 
 
