@@ -1,6 +1,6 @@
 (in-package :linalg-cl)
 
-(defun dot-product (l1 l2 &aux (sum 0f0))
+(defun dot-product (vec1 vec2 &aux (sum 0f0))
   (map 'vector #'(lambda (x1 x2)
 		   (declare (type single-float x1 x2))
 		   (incf sum (the single-float (* x1 x2)))) l1 l2)
@@ -43,6 +43,17 @@
 
 (defun normalize (vec)
   (./ vec (norm vec)))
+
+(defun cross (vec1 vec2)
+  (let ((x1 (vec-x vec1))
+	(y1 (vec-y vec1))
+	(z1 (vec-z vec1))
+	(x2 (vec-x vec2))
+	(y2 (vec-y vec2))
+	(z2 (vec-z vec2)))
+    (vec3f `#(,(- (* y1 z2) (* z1 y2))
+	     ,(- (* z1 x2) (* x1 z2))
+	     ,(- (* x1 y2) (* y1 x2))))))
 
 (defmacro define-vector-of-size (size)
   (let ((name

@@ -5,6 +5,7 @@
   (:export :dot-product
 	   :m+ :m* :m- :m/
 	   :./ :.*
+	   :cross
 	   :negative
 	   :norm
 	   :normalize
