@@ -17,7 +17,7 @@
 	    and dir-y = (coerce (- center-y (+ j 0.5)) 'single-float)
 	    for ray = (define-ray (vec3f #(0f0 0f0 0f0))
 			  (normalize (vec3f `#(,dir-x ,dir-y ,dir-z))))
-	    for color = (cast-ray ray scene j i)
+	    for color = (cast-ray ray scene)
 	    do (progn
 		 (let* ((max-color (max (vec-x color) (vec-y color) (vec-z color))))
 		   (when (> max-color 255)
