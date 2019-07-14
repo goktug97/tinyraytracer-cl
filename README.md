@@ -10,5 +10,5 @@ git clone https://github.com/goktug97/tinyraytracer-cl
 
 ```lisp
 (ql:quickload :tinyraytracer-cl)
-(tinyraytracer-cl:render (simple-scene))
+(tinyraytracer-cl:render (tinyraytracer-cl:simple-scene))
 ```

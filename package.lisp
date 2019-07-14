@@ -19,8 +19,9 @@
   (:use #:cl
 	#:linalg-cl)
   (:export :scene
-	   :scene-objects
-	   :ray-intersect
-	   :ray
-	   :ray-direction
-	   :ray-origin))
+	   :object
+	   :sphere
+	   :light
+	   :render
+	   :simple-scene
+	   ))
