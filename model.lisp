@@ -36,3 +36,15 @@
 			      ,(parse-float (elt split-line 2))
 			      ,(parse-float (elt split-line 3))))
 		     verts)))))))
+
+(defclass model (object)
+  ((model-path
+    :initarg :model-path
+    :initform (error "Model path must be provided"))
+   (verts)
+   (faces)))
+
+(defmethod initialize-instance :after ((model model) &key model-path)
+  (destructuring-bind (verts faces) (read-obj model-path)
+    (setf (slot-value model 'verts) verts)
+    (setf (slot-value model 'faces) faces)))
