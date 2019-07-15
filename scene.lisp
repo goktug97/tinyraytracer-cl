@@ -46,7 +46,7 @@
 		 closest-object object)))
     (when closest-object
       (setf material (object-material closest-object))
-      (multiple-value-bind (point object-normal)
+      (destructuring-bind (point object-normal)
 	  (object-normal ray closest-object object-dist)
 	(setf hit point
 	      normal object-normal)))
@@ -209,7 +209,7 @@
 	 (light-3 (make-instance 'light :intensity 1.7
 				 :position (vec3f #(30f0 20f0 30f0))))
 	 (scene (make-instance 'scene
-			       :objects (list sphere-1 sphere-2 sphere-3 sphere-4 )
+			       :objects (list sphere-1 sphere-2 sphere-3 sphere-4 duck)
 			       :lights (list light-1 light-2 light-3)
 			       :background (png-read:image-data
 					    (png-read:read-png-file "envmap.png")))))
