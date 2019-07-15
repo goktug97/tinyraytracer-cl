@@ -26,25 +26,32 @@
 	 (verts))
 	((null line) (list faces verts))
       (when split-line
-	(cond ((equal (coerce (elt split-line 0) 'character) #\f)
-	       (push (vec3f `#(,(parse-float (elt split-line 1))
-			      ,(parse-float (elt split-line 2))
-			      ,(parse-float (elt split-line 3))))
-		     faces))
+	(cond 
 	      ((equal (coerce (elt split-line 0) 'character) #\v)
 	       (push (vec3f `#(,(parse-float (elt split-line 1))
 			      ,(parse-float (elt split-line 2))
 			      ,(parse-float (elt split-line 3))))
-		     verts)))))))
+		     verts))
+	      ((equal (coerce (elt split-line 0) 'character) #\f)
+	       (push (list (elt verts (1- (parse-float (elt split-line 1))))
+			   (elt verts (1- (parse-float (elt split-line 2))))
+			   (elt verts (1- (parse-float (elt split-line 3)))))
+		     faces)))))))
 
 (defclass model (object)
   ((model-path
     :initarg :model-path
     :initform (error "Model path must be provided"))
-   (verts)
-   (faces)))
+   (verts
+    :reader model-verts)
+   (faces
+    :reader model-faces)))
 
 (defmethod initialize-instance :after ((model model) &key model-path)
-  (destructuring-bind (verts faces) (read-obj model-path)
+  (destructuring-bind (faces verts) (read-obj model-path)
     (setf (slot-value model 'verts) verts)
     (setf (slot-value model 'faces) faces)))
+
+(defmethod ray-intersect ((ray ray) (object model))
+  (loop for face in (model-faces object)
+       for edge1 = nil))
