@@ -44,6 +44,8 @@
 
 (defgeneric ray-intersect (ray object))
 
+(defgeneric object-normal (ray object t0))
+
 (defun define-ray (origin direction)
   (make-instance 'ray :direction direction :origin origin))
 

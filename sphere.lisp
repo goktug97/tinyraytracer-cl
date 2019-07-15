@@ -22,13 +22,13 @@
 	 (radius2 (expt sphere-radius 2)))
     (unless (> d2 radius2)
       (let* ((thc (sqrt (- radius2 d2)))
-	     (t0 (- tca thc))
-	     (hit (m+ ray-origin (.* ray-direction t0)))
-	     (normal (normalize (m- hit sphere-center))))
+	     (t0 (- tca thc)))
 	(when (< t0 0)
 	  (setf t0 (+ tca thc)))
 	(unless (< t0 0)
-	  (list t0 hit normal))))))
+	  t0)))))
 
-
-
+(defmethod object-normal ((ray ray) (sphere sphere) t0)
+  (let* ((hit (m+ (ray-origin ray) (.* (ray-direction ray) t0)))
+	 (normal (normalize (m- hit (sphere-center sphere)))))
+    (list hit normal)))

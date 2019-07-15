@@ -5,8 +5,8 @@
 (declaim (optimize (speed 3) (safety 0) (debug 0)))
 
 (defun render (scene)
-  (let* ((width 512)
-	 (height 384)
+  (let* ((width 1024)
+	 (height 768)
 	 (fov (/ (coerce pi 'single-float) 3f0))
 	 (screen-width (* 2 (tan (/ fov 2))))
 	 (dir-z (- (/ height screen-width)))
@@ -29,5 +29,6 @@
 		       (aref (zpng:data-array rendered-image) j i 1)
 		       (max 0 (min 255 (floor (vec-y color))))
 		       (aref (zpng:data-array rendered-image) j i 2)
-		       (max 0 (min 255 (floor (vec-z color)))))))
+		       (max 0 (min 255 (floor (vec-z color)))))
+		 (print j)))
        finally (zpng:write-png rendered-image "./rendered_image.png"))))
