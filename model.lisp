@@ -1,5 +1,7 @@
 (in-package :tinyraytracer-cl)
 
+(declaim (optimize (speed 3) (safety 0) (debug 0)))
+
 (defun delimiterp (c) (or (char= c #\Space) (char= c #\,)))
 
 (defun parse-float (line)
@@ -52,6 +54,30 @@
     (setf (slot-value model 'verts) verts)
     (setf (slot-value model 'faces) faces)))
 
-(defmethod ray-intersect ((ray ray) (object model))
-  (loop for face in (model-faces object)
-       for edge1 = nil))
+(defmethod ray-intersect ((ray ray) (model model))
+  (let ((ray-direction (ray-direction ray))
+	(ray-origin (ray-origin ray))
+	(faces (model-faces model)))
+    (loop :for face :in faces
+       :for edge1 := (m- (elt face 1) (elt face 0))
+       :and edge2 := (m- (elt face 2) (elt face 0))
+       :for pvec := (cross ray-direction edge2)
+       :for det := (dot-product edge1 pvec)
+       :unless (< det 1e-5) :do
+	 (let* ((tvec (m- ray-origin (elt face 0)))
+		(u (dot-product tvec pvec)))
+	   (unless (or (< u 0) (> u det))
+	     (let* ((qvec (cross tvec edge1))
+		    (v (dot-product ray-direction qvec)))
+	       (unless (or (< v 0) (> (+ u v) det))
+		 (let* ((tnear (* (dot-product edge2 qvec) (/ 1f0 det)))
+			(hit (m+ ray-origin (.* ray-direction tnear)))
+			(normal (normalize (cross edge1 edge2))))
+		   (when (> tnear 1e-5)
+		     (return (list tnear hit normal)))))))))))
+
+(defun vert (face li)
+  (elt face li))
+
+(defun point (verts i)
+  (elt verts i))

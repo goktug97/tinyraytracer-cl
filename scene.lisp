@@ -1,5 +1,7 @@
 (in-package :tinyraytracer-cl)
 
+(declaim (optimize (speed 3) (safety 0) (debug 0)))
+
 (defclass scene ()
   ((objects
     :initarg :objects
@@ -27,7 +29,7 @@
   (pop (slot-value scene 'lights)))
 
 (defun scene-intersect (ray scene)
-  (let ((spheres-dist most-positive-single-float)
+  (let ((object-dist most-positive-single-float)
 	(checkerboard-dist most-positive-single-float)
 	(ray-direction (ray-direction ray))
 	(ray-origin (ray-origin ray))
@@ -36,16 +38,16 @@
 	(normal)
 	(material (make-instance 'material)))
     (loop :for object :in (scene-objects scene)
-       :for intersection-distance = (ray-intersect ray object)
-       :when (and intersection-distance (< intersection-distance spheres-dist))
+       :for intersection = (ray-intersect ray object)
+       :when (and intersection (< (first intersection) object-dist))
        :do
 	 (progn
-	    (setf spheres-dist intersection-distance)
-	    (setf closest-object object)))
+	   (setf object-dist (first intersection)
+		 closest-object object
+		 hit (second intersection)
+		 normal (third intersection))))
     (when closest-object
-      (setf hit (m+ ray-origin (.* ray-direction spheres-dist))
-	    normal (normalize (m- hit (sphere-center closest-object)))
-	    material (object-material closest-object)))
+      (setf material (object-material closest-object)))
     (when (> (abs (vec-y ray-direction)) 1e-3)
       (let* ((d (- (/ (+ (vec-y ray-origin) 4f0) (vec-y ray-direction))))
 	     (pt (m+ ray-origin (.* ray-direction d))))
@@ -53,7 +55,7 @@
 		   (< (abs (vec-x pt)) 10)
 		   (< (vec-z pt) -10)
 		   (> (vec-z pt) -30)
-		   (< d spheres-dist))
+		   (< d object-dist))
 	  (setf checkerboard-dist d
 		hit pt
 		normal (vec3f #(0f0 1f0 0f0)))
@@ -62,7 +64,7 @@
 			     (truncate (* 0.5f0 (vec-z hit)))))
 		    (vec3f #(76.5f0 76.5f0 76.5f0))
 		    (vec3f #(76.5f0 51.0f0 25.5f0)))))))
-    (when (< (min spheres-dist checkerboard-dist) 1000)
+    (when (< (min object-dist checkerboard-dist) 1000)
       (list hit normal material))))
 
 (defun reflect (ray-direction normal)
@@ -197,6 +199,7 @@
 				  :radius 4
 				  :center (vec3f #(7f0 5f0 -18f0))
 				  :material mirror))
+	 (duck (make-instance 'model :model-path "./duck.obj" :material glass))
 	 (light-1 (make-instance 'light :intensity 1.5
 				 :position (vec3f #(-20f0 20f0 20f0))))
 	 (light-2 (make-instance 'light :intensity 1.8
@@ -204,7 +207,7 @@
 	 (light-3 (make-instance 'light :intensity 1.7
 				 :position (vec3f #(30f0 20f0 30f0))))
 	 (scene (make-instance 'scene
-			       :objects (list sphere-1 sphere-2 sphere-3 sphere-4)
+			       :objects (list sphere-1 sphere-2 sphere-3 sphere-4 duck)
 			       :lights (list light-1 light-2 light-3)
 			       :background (png-read:image-data
 					    (png-read:read-png-file "envmap.png")))))

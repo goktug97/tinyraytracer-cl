@@ -12,5 +12,6 @@
 	       (:file "linalg")
 	       (:file "objects")
 	       (:file "sphere")
+	       (:file "model")
 	       (:file "scene")
                (:file "tinyraytracer-cl")))
