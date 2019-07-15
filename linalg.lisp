@@ -3,7 +3,8 @@
 (defun dot-product (vec1 vec2 &aux (sum 0f0))
   (map 'vector #'(lambda (x1 x2)
 		   (declare (type single-float x1 x2))
-		   (incf sum (the single-float (* x1 x2)))) l1 l2)
+		   (incf sum (the single-float (* x1 x2))))
+       vec1 vec2)
   (the single-float sum))
 
 (defmacro define-elementwise-vector-op (name op)

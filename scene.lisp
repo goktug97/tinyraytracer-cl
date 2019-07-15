@@ -44,7 +44,7 @@
 	    (setf closest-object object)))
     (when closest-object
       (setf hit (m+ ray-origin (.* ray-direction spheres-dist))
-	    normal (normalize (m- hit (object-center closest-object)))
+	    normal (normalize (m- hit (sphere-center closest-object)))
 	    material (object-material closest-object)))
     (when (> (abs (vec-y ray-direction)) 1e-3)
       (let* ((d (- (/ (+ (vec-y ray-origin) 4f0) (vec-y ray-direction))))

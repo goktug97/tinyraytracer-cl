@@ -11,5 +11,6 @@
   :components ((:file "package")
 	       (:file "linalg")
 	       (:file "objects")
+	       (:file "sphere")
 	       (:file "scene")
                (:file "tinyraytracer-cl")))
